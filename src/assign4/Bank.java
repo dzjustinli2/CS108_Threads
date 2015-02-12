@@ -13,13 +13,30 @@ public class Bank{
 	String file;
 	int numWorkers;
 	
-	public class Worker{
+	public class Worker extends Thread{
+		public void run(){
+			try{
+				Transaction tr = transactionQueue.take();
+				while(!tr.isSentinal()){
+					performTransaction(tr);
+					tr = transactionQueue.take();
+				}
+				latch.countDown();
+			}catch(Exception e){
+				System.out.println("Exception in thread run loop");
+				e.printStackTrace();
+			}
+		}
 		
+		private void performTransaction(Transaction tr){
+			
+		}
 	}
 
 	private void startWorkers(){
 		for(int i = 0; i < numWorkers; i++){
-			
+			Worker wk = new Worker();
+			wk.start();
 		}
 	}
 
