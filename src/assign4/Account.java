@@ -26,6 +26,14 @@ public class Account implements Comparator<Account>, Comparable<Account>{
 		return id;
 	}
 	
+	public int getTransactions(){
+		return numTransactions;
+	}
+	
+	public int getBalance(){
+		return balance;
+	}
+	
 	public synchronized void addAmmount(int ammount){
 		numTransactions = numTransactions + 1;
 		balance = balance + ammount;
@@ -45,6 +53,17 @@ public class Account implements Comparator<Account>, Comparable<Account>{
 	//Overriding the compare method
 	public int compare(Account ac1, Account ac2){
 		return ac1.getID() - ac2.getID();
+	}
+	
+	public boolean equals(Object obj){
+		// standard equals() technique 1
+		if (obj == this) return true;
+		// standard equals() technique 2
+		// (null will be false)
+		if (!(obj instanceof Account)) return false;
+		Account other = (Account)obj;
+		if(this.getID() == other.getID()) return true;
+		return false;
 	}
 
 }

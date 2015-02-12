@@ -128,6 +128,10 @@ public class Bank{
 			e.printStackTrace();
 		}
 	}
+	
+	public ArrayList<Account> getAccounts(){
+		return accounts;
+	}
 
 	public static void main(String[] args){
 		String transactionFile = args[0];
