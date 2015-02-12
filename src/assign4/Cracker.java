@@ -1,6 +1,7 @@
 package assign4;
 
 import java.security.*;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class Cracker {
@@ -87,24 +88,32 @@ public class Cracker {
 	private String password;
 	private CountDownLatch found;
 	private boolean foundPassword;
-	MessageDigest md;
+	private ArrayList<Worker> allWorkers;
+	private int threadsLeft;
 	
 	//We're in cracker mode
 	public Cracker(byte[] hash, int passwordLength, int numThreads){
-		this.hash = hash;
+		if(numThreads > 40) numThreads = 40;
+		if(passwordLength < 0) passwordLength = 0;
+		this.hash = new byte[hash.length];
+		System.arraycopy(hash,0,this.hash,0,hash.length);
 		this.passwordLength = passwordLength;
 		this.numThreads = numThreads;
 		password = "";
 		found = new CountDownLatch(1);
 		foundPassword = false;
-		try{
-			md = MessageDigest.getInstance("SHA");
-		}catch(Exception e) {
-			System.out.println("Exception generating instance of message encryption algorithm");
-			e.printStackTrace();
-		}
+		allWorkers = new ArrayList<Worker>(numThreads);
+		threadsLeft = numThreads;
 	}
-
+	
+	private synchronized void decrementThreadsLeft(){
+		threadsLeft = threadsLeft -1;
+	}
+	
+	private synchronized int getThreadsLeft(){
+		return threadsLeft;
+	}
+	
 	private synchronized void setPassword(String password){
 		this.password = password;
 	}
@@ -129,12 +138,18 @@ public class Cracker {
 				wk = new Worker(i*increment,(i+1)*increment-1);
 			}
 			wk.start();
+			allWorkers.add(wk);
 		}
 		try{
 			found.await();
 		}catch(InterruptedException e){
 			System.out.println("Main thread was interrupted before password was found");
 			e.printStackTrace();
+		}
+		//Clean up the threads still running
+		for(int i = 0; i < allWorkers.size(); i++){
+			Worker wk = allWorkers.get(i);
+			wk.interrupt();
 		}
 		return password;
 	}
@@ -143,11 +158,19 @@ public class Cracker {
 		//begin and end are inclusive
 		private int begin;
 		private int end;
+		private MessageDigest md;
+		
 		
 		public Worker(int start, int finish){
 			super();
 			begin = start;
 			end = finish;
+			try{
+				md = MessageDigest.getInstance("SHA");
+			}catch(Exception e) {
+				System.out.println("Exception generating instance of message encryption algorithm");
+				e.printStackTrace();
+			}
 		}
 		
 		public void run(){
@@ -158,6 +181,9 @@ public class Cracker {
 					val = makeString(ch.toString());
 					if(val) break;
 				}
+				decrementThreadsLeft();
+				//In case we don't find a word
+				if(getThreadsLeft() == 0) found.countDown();
 			}catch(Exception e){
 				System.out.println("Exception in thread run loop");
 				System.out.println("begin: " + begin + " end: " + end);
@@ -169,7 +195,7 @@ public class Cracker {
 			if(getFoundPassword()) return false;
 			if(startingValue.length() > passwordLength) return false;
 			byte[] myHash = md.digest(startingValue.getBytes());
-			if(myHash.equals(hash)){
+			if(Arrays.equals(myHash,hash)){
 				setPassword(startingValue);
 				setFoundPassword();
 				found.countDown();
@@ -184,6 +210,8 @@ public class Cracker {
 		}
 		
 	}
+	
+	/*-------------------------------*/
 	
 	public static void main(String[] args){
 		Cracker ck;

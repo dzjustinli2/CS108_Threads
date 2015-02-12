@@ -34,10 +34,28 @@ public class CrackerTest {
 		setMapUp();
 		for(Map.Entry<String, String> pwEntry : genMap.entrySet()){
 			String hash = pwEntry.getValue();
-			Cracker ck = new Cracker(Cracker.hexToArray(hash),5,1);
+			String goldPwd = pwEntry.getKey();
+			System.out.println("Searching for " + goldPwd);
+			Cracker ck = new Cracker(Cracker.hexToArray(hash),goldPwd.length(),goldPwd.length()*2);
 			String password = ck.findPassword();
-			assertEquals(password,pwEntry.getKey());
+			System.out.println("Found " + password);
+			assertEquals(password,goldPwd);
         }
+		System.out.println("All done");
+	}
+	
+	@Test
+	public void testCrackerNegative() {
+		setMapUp();
+		for(Map.Entry<String, String> pwEntry : genMap.entrySet()){
+			String hash = pwEntry.getValue();
+			String goldPwd = pwEntry.getKey();
+			System.out.println("Searching for " + goldPwd + " in the negative test");
+			Cracker ck = new Cracker(Cracker.hexToArray(hash),goldPwd.length()-1,goldPwd.length()*2);
+			String password = ck.findPassword();
+			assertEquals(password.length(),0);
+        }
+		System.out.println("All done");
 	}
 
 }
