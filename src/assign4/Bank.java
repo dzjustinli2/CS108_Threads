@@ -29,7 +29,11 @@ public class Bank{
 		}
 		
 		private void performTransaction(Transaction tr){
-			
+			Account fromAcc = accountMap.get(tr.getFrom());
+			Account toAcc = accountMap.get(tr.getTo());
+			int ammount = tr.getAmmount();
+			fromAcc.addAmmount(-1*ammount);
+			toAcc.addAmmount(ammount);
 		}
 	}
 

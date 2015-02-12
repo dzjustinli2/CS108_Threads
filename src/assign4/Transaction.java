@@ -21,15 +21,15 @@ public class Transaction {
 		sentinal = false;
 	}
 
-	public Integer from(){
+	public Integer getFrom(){
 		return fromID;
 	}
 	
-	public Integer to(){
+	public Integer getTo(){
 		return toID;
 	}
 	
-	public int ammount(){
+	public int getAmmount(){
 		return ammount;
 	}
 	

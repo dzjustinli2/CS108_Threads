@@ -26,6 +26,11 @@ public class Account implements Comparator<Account>, Comparable<Account>{
 		return id;
 	}
 	
+	public synchronized void addAmmount(int ammount){
+		numTransactions = numTransactions + 1;
+		balance = balance + ammount;
+	}
+	
 	public String toString(){
 		return "acct:" + id + " bal:" + balance + " trans:" + numTransactions; 
 	}
