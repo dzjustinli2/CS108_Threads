@@ -8,23 +8,51 @@ public class Bank{
 	
 	private HashMap<Integer,Account> accountMap;
 	private ArrayBlockingQueue<Transaction> transactionQueue;
+	private ArrayList<Account> accounts;
+	private CountDownLatch latch;
 	String file;
 	int numWorkers;
+	
+	public class Worker{
+		
+	}
+
+	private void startWorkers(){
+		for(int i = 0; i < numWorkers; i++){
+			
+		}
+	}
 
 	public Bank(String file, int numWorkers){
 		this.file = file;
 		this.numWorkers = numWorkers;
 		accountMap = new HashMap<Integer,Account>();
 		transactionQueue = new ArrayBlockingQueue<Transaction>(numWorkers*3);
+		accounts = new ArrayList<Account>();
+		latch = new CountDownLatch(numWorkers);
 	}
 	
 	public void open(){
 		startWorkers();
 		readFile(file);
+		try{
+			latch.await();
+		}catch(InterruptedException e){
+			System.out.println("Main thread was interrupted before latch counted down");
+			e.printStackTrace();
+		}
+		printAccounts();
 	}
 	
-	private void startWorkers(){
-		
+	private void printAccounts(){
+		for(Map.Entry<Integer, Account> accountEntry : accountMap.entrySet()){
+			accounts.add(accountEntry.getValue());
+        }
+		Collections.sort(accounts);
+		int size = accounts.size();
+		for(int i = 0; i < size; i++){
+			System.out.println(accounts.get(i));
+		}
 	}
 	
 	private void createAccount(String accountID){
@@ -35,8 +63,8 @@ public class Bank{
 		}
 	}
 	
-	private Transaction createTransaction(String fromAcc, String toAcc, String ammount, boolean terminator){
-		if(terminator){
+	private Transaction createTransaction(String fromAcc, String toAcc, String ammount, boolean sentinal){
+		if(sentinal){
 			return new Transaction();
 		}else{
 			return new Transaction(fromAcc,toAcc,ammount);
@@ -56,10 +84,24 @@ public class Bank{
 				createAccount(fromAcc);
 				createAccount(toAcc);
 				Transaction tr = createTransaction(fromAcc,toAcc,ammount,false);
-				//transactionQueue.put(tr);
+				try{
+					transactionQueue.put(tr);
+				}catch(Exception e){
+					System.out.println("Exception while reading in transactions");
+					e.printStackTrace();
+				}
 				line = br.readLine();
 			}
 			br.close();
+			try{
+				for(int i = 0; i < numWorkers; i++){
+					Transaction tr = createTransaction(null,null,null,true);
+					transactionQueue.put(tr);
+				}
+			}catch(Exception e){
+				System.out.println("Exception while adding sentinal transactions");
+				e.printStackTrace();
+			}
 		}catch(IOException e){
 			System.out.println("Error reading in " + file);
 			e.printStackTrace();
