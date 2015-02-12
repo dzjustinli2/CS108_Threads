@@ -1,11 +1,9 @@
 package assign4;
 
 import java.util.concurrent.*;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -19,14 +17,18 @@ public class TheCount extends JPanel{
 	private JButton start;
 	private JButton stop;
 	private int goal;
+	private int current;
+	private WorkerThread wt;
 
 	public TheCount() {
 		goal = 100000000;
+		current = 0;
+		wt = new WorkerThread();
 	}
 	
 	public void createAndShowGui(){
 		goalTextField = new JTextField(goal + "");
-		currentStanding = new JLabel("0");
+		currentStanding = new JLabel(current + "");
 		start = new JButton("Start");
 		stop = new JButton("Stop");
 		add(goalTextField);
@@ -37,6 +39,16 @@ public class TheCount extends JPanel{
 		jf.add(this);
 	}
 	
+	public void start(){
+		wt.start();
+	}
+	
+	public class WorkerThread extends Thread{
+		public void run(){
+			
+		}
+	}
+	
 	private void addListeners(){
 		goalTextField.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -44,14 +56,43 @@ public class TheCount extends JPanel{
 				goal = Integer.parseInt(text);
 			}
 		});
+		goalTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				String text = goalTextField.getText();
+				goal = Integer.parseInt(text);
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				String text = goalTextField.getText();
+				goal = Integer.parseInt(text);
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				String text = goalTextField.getText();
+				goal = Integer.parseInt(text);
+			}
+		});
 		start.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("start" + goal);
+				System.out.println("Thread started");
+				if(wt.isAlive()){
+					wt.interrupt();
+					wt = null;
+				}
+				current = 0;
+				currentStanding.setText(current + "");
+				wt = new WorkerThread();
+				wt.start();
 			}
 		});
 		stop.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("stop " + goal);
+				System.out.println("Thread stopped");
+				if(wt.isAlive()){
+					wt.interrupt();
+					wt = null;
+				}
 			}
 		});
 	}
@@ -63,8 +104,6 @@ public class TheCount extends JPanel{
 		jf.setLocationByPlatform(true);
 		jf.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jf.pack();
-		jf.setVisible(true);
-		//It's visible now, need to use the swing thread
 		for(int i = 0; i < 4; i++){
 			TheCount tc = new TheCount();
 			tc.setLayout(new BoxLayout(tc, BoxLayout.Y_AXIS));
@@ -72,9 +111,11 @@ public class TheCount extends JPanel{
 				public void run(){
 					tc.createAndShowGui();
 					tc.addListeners();
+					tc.start();
 				}
 			});
 		}
+		jf.setVisible(true);
 	}
 
 }
