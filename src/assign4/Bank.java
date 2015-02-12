@@ -6,7 +6,10 @@ import java.io.*;
 
 public class Bank{
 	
-	private HashMap<Integer,Account> accountMap;
+	//Get funky null pointer exceptions when using a normal hashmap
+	//There are no guarantees about the number of accounts and if they
+	//are sequential so i use a map instead of an array
+	private ConcurrentHashMap<Integer,Account> accountMap;
 	private ArrayBlockingQueue<Transaction> transactionQueue;
 	private ArrayList<Account> accounts;
 	private CountDownLatch latch;
@@ -47,13 +50,13 @@ public class Bank{
 	public Bank(String file, int numWorkers){
 		this.file = file;
 		this.numWorkers = numWorkers;
-		accountMap = new HashMap<Integer,Account>();
+		accountMap = new ConcurrentHashMap<Integer,Account>();
 		transactionQueue = new ArrayBlockingQueue<Transaction>(numWorkers*3);
 		accounts = new ArrayList<Account>();
 		latch = new CountDownLatch(numWorkers);
 	}
 	
-	public void open(){
+	public void open(boolean print){
 		startWorkers();
 		readFile(file);
 		try{
@@ -62,7 +65,7 @@ public class Bank{
 			System.out.println("Main thread was interrupted before latch counted down");
 			e.printStackTrace();
 		}
-		printAccounts();
+		if(print) printAccounts();
 	}
 	
 	private void printAccounts(){
@@ -78,10 +81,7 @@ public class Bank{
 	
 	private void createAccount(String accountID){
 		Integer id = new Integer(Integer.parseInt(accountID));
-		if(!accountMap.containsKey(id)){
-			Account ac = new Account(id);
-			accountMap.put(id, ac);
-		}
+		accountMap.putIfAbsent(id, new Account(id));
 	}
 	
 	private Transaction createTransaction(String fromAcc, String toAcc, String ammount, boolean sentinal){
@@ -137,7 +137,7 @@ public class Bank{
 		String transactionFile = args[0];
 		String numWorkers = args[1];
 		Bank bn = new Bank(transactionFile,Integer.parseInt(numWorkers));
-		bn.open();
+		bn.open(true);
 	}
 
 }

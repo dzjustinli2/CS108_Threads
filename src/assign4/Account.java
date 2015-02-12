@@ -39,11 +39,13 @@ public class Account implements Comparator<Account>, Comparable<Account>{
 		balance = balance + ammount;
 	}
 	
+	@Override
 	public String toString(){
 		return "acct:" + id + " bal:" + balance + " trans:" + numTransactions; 
 	}
 	
 	//Overriding the compareTo method
+	@Override
 	public int compareTo(Account ac){
 		Integer thisID = new Integer(this.getID());
 		Integer thatID = new Integer(ac.getID());
@@ -51,10 +53,12 @@ public class Account implements Comparator<Account>, Comparable<Account>{
 	}
 
 	//Overriding the compare method
+	@Override
 	public int compare(Account ac1, Account ac2){
 		return ac1.getID() - ac2.getID();
 	}
 	
+	@Override
 	public boolean equals(Object obj){
 		// standard equals() technique 1
 		if (obj == this) return true;
@@ -64,6 +68,12 @@ public class Account implements Comparator<Account>, Comparable<Account>{
 		Account other = (Account)obj;
 		if(this.getID() == other.getID()) return true;
 		return false;
+	}
+	
+	@Override
+	public int hashCode(){
+		Integer hc = new Integer(this.getID());
+		return hc.hashCode();
 	}
 
 }

@@ -36,4 +36,8 @@ public class Transaction {
 	public boolean isSentinal(){
 		return sentinal;
 	}
+	
+	public String toString(){
+		return fromID + " " + toID + " " + ammount;
+	}
 }

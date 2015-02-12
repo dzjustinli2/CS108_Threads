@@ -13,7 +13,7 @@ public class BankTest {
 		int maxThreads = 10;
 		for(int i = 1; i <= maxThreads; i++){
 			Bank bn = new Bank(file,i);
-			bn.open();
+			bn.open(false);
 			ArrayList<Account> ar = bn.getAccounts();
 			int size = ar.size();
 			for(int j = 0; j < size; j++){
@@ -34,7 +34,7 @@ public class BankTest {
 		int maxThreads = 10;
 		for(int i = 1; i <= maxThreads; i++){
 			Bank bn = new Bank(file,i);
-			bn.open();
+			bn.open(false);
 			ArrayList<Account> ar = bn.getAccounts();
 			int size = ar.size();
 			for(int j = 0; j < size; j++){
@@ -50,7 +50,7 @@ public class BankTest {
 		int maxThreads = 10;
 		for(int i = 1; i <= maxThreads; i++){
 			Bank bn = new Bank(file,i);
-			bn.open();
+			bn.open(false);
 			ArrayList<Account> ar = bn.getAccounts();
 			int size = ar.size();
 			for(int j = 0; j < size; j++){
