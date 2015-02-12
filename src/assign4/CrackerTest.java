@@ -34,7 +34,7 @@ public class CrackerTest {
 		setMapUp();
 		for(Map.Entry<String, String> pwEntry : genMap.entrySet()){
 			String hash = pwEntry.getValue();
-			Cracker ck = new Cracker(hash.getBytes(),5,4);
+			Cracker ck = new Cracker(Cracker.hexToArray(hash),5,1);
 			String password = ck.findPassword();
 			assertEquals(password,pwEntry.getKey());
         }

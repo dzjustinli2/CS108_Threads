@@ -2,9 +2,6 @@ package assign4;
 
 import java.security.*;
 import java.util.concurrent.*;
-import java.util.*;
-import java.io.*;
-import java.lang.StringBuilder;
 
 public class Cracker {
 	// Array of chars used to produce strings
@@ -163,6 +160,7 @@ public class Cracker {
 				}
 			}catch(Exception e){
 				System.out.println("Exception in thread run loop");
+				System.out.println("begin: " + begin + " end: " + end);
 				e.printStackTrace();
 			}
 		}
