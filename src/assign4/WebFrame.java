@@ -3,12 +3,10 @@ package assign4;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.concurrent.*;
 
 import javax.swing.*;
-import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
-
-import assign4.TheCount.WorkerThread;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -28,7 +26,7 @@ public class WebFrame extends JFrame{
 	private JProgressBar progressBar;
 	private JButton stopButton;
 	ArrayList<String> links;
-	ArrayList<WebWorker> workers;
+	private Launcher lt;
 
 	public WebFrame(String file) {
 		super();
@@ -47,10 +45,50 @@ public class WebFrame extends JFrame{
 	
 	private void interrupt(){
 		setButtonsEnabled(true);
+		lt.cancelThreads();
 	}
 	
 	private void fetch(int numThreads){
 		setButtonsEnabled(false);
+		lt = new Launcher(numThreads);
+		lt.start();
+	}
+	
+	public class Launcher extends Thread{
+		int totalThreads;
+		int threadsRunning;
+		ArrayList<WebWorker> ar;
+		
+		public Launcher(int numThreads){
+			super();
+			totalThreads = numThreads;
+			threadsRunning = 0;
+			ar = new ArrayList<WebWorker>(totalThreads);
+		}
+		public void run(){
+			for(int i = 0; i < totalThreads; i++){
+				
+			}
+		}
+		
+		public void cancelThreads(){
+			int size = ar.size();
+			for(int i = 0; i < size; i++){
+				WebWorker wb = ar.get(i);
+				if(wb != null && wb.isAlive()){
+					wb.interrupt();
+					wb = null;
+				}
+			}
+			threadsRunning = 0;
+			SwingUtilities.invokeLater(new Runnable(){
+				public void run(){
+					runningLabel.setText("Running: " + threadsRunning);
+					progressBar.setValue(0);
+				}
+			});
+			this.interrupt();
+		}
 	}
 	
 	private void addListeners(){
@@ -112,8 +150,8 @@ public class WebFrame extends JFrame{
 	}
 	
 	private void createFields(){
-		runningLabel = new JLabel("Running: ");
-		completedLabel = new JLabel("Completed: ");
+		runningLabel = new JLabel("Running: " + 0);
+		completedLabel = new JLabel("Completed: " + 0);
 		elapsedLabel = new JLabel("Elapsed: ");
 	}
 	
