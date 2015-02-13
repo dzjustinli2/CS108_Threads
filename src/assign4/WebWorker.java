@@ -55,7 +55,9 @@ public class WebWorker extends Thread {
 			double end = System.currentTimeMillis();
 			// Successful download if we get here
 			double wallToWall = end - start;
-			String line = " " + (int)wallToWall + "ms " + contents.length() + " bytes";
+			Date timeDiff = new Date();
+			SimpleDateFormat timeFormat = new SimpleDateFormat("H:mm:ss");
+			String line = timeFormat.format(timeDiff) + "   " + (int)wallToWall + "ms   " + contents.length() + " bytes";
 			graphics(line);
 		}
 		// Otherwise control jumps to a catch...
