@@ -66,6 +66,7 @@ public class WebFrame extends JFrame{
 		public AtomicLong threadsRunning;
 		public int tasksFinished;
 		public WebFrame program;
+		private Object lock;
 		
 		public Launcher(int numThreads, WebFrame wb){
 			super();
@@ -75,6 +76,7 @@ public class WebFrame extends JFrame{
 			ar = new ArrayList<WebWorker>(totalThreads);
 			tasksFinished = 0;
 			program = wb;
+			lock = new Object();
 		}
 		
 		public void run(){
@@ -84,13 +86,17 @@ public class WebFrame extends JFrame{
 			try{
 				double start = System.currentTimeMillis();
 				while(linkIndex < linkSize){
-					sm.acquire();
-					WebWorker wb = new WebWorker(program,linkIndex);
-					ar.add(wb);
-					wb.start();
-					linkIndex = linkIndex + 1;
+					synchronized(lock){
+						sm.acquire();
+						if(isInterrupted()){
+							throw new InterruptedException();
+						}
+						WebWorker wb = new WebWorker(program,linkIndex);
+						ar.add(wb);
+						wb.start();
+						linkIndex = linkIndex + 1;
+					}
 				}
-				int size = ar.size();
 				//Could maybe try joining here
 				while((int)threadsRunning.get() != 1){
 					if(isInterrupted()){
@@ -111,20 +117,18 @@ public class WebFrame extends JFrame{
 		}
 		
 		public void cancelThreads(){
-			int size = ar.size();
-			for(int i = 0; i < size; i++){
-				WebWorker wb = ar.get(i);
-				if(wb != null && wb.isAlive()){
-					wb.interrupt();
-					wb = null;
+			synchronized(lock){
+				int size = ar.size();
+				for(int i = 0; i < size; i++){
+					WebWorker wb = ar.get(i);
+					if(wb != null && wb.isAlive()){
+						wb.interrupt();
+						wb = null;
+					}
 				}
+				this.interrupt();
 			}
-			this.interrupt();
 		}
-	}
-	
-	public void setElapsed(){
-		
 	}
 
 	public void decrementLabel(){
