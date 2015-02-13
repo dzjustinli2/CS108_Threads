@@ -50,11 +50,9 @@ public class WebFrame extends JFrame{
 	}
 	
 	private void fetch(int numThreads){
-		SwingUtilities.invokeLater(new Runnable(){
-			public void run(){
-				progressBar.setValue(0);
-			}
-		});
+		//We're on the swing thread here
+		progressBar.setValue(0);
+		elapsedLabel.setText("Elapsed: ");
 		clearStatus();
 		setButtonsEnabled(false);
 		lt = new Launcher(numThreads,this);
@@ -84,6 +82,7 @@ public class WebFrame extends JFrame{
 			int linkSize = links.size();
 			int linkIndex = 0;
 			try{
+				double start = System.currentTimeMillis();
 				while(linkIndex < linkSize){
 					sm.acquire();
 					WebWorker wb = new WebWorker(program,linkIndex);
@@ -91,7 +90,23 @@ public class WebFrame extends JFrame{
 					wb.start();
 					linkIndex = linkIndex + 1;
 				}
+				int size = ar.size();
+				//Could maybe try joining here
+				while((int)threadsRunning.get() != 1){
+					if(isInterrupted()){
+						throw new InterruptedException();
+					}
+					sleep(50);
+				}
+				double end = System.currentTimeMillis();
+				double elapsed = (end - start)/1000;
+				SwingUtilities.invokeLater(new Runnable(){
+					public void run(){
+						elapsedLabel.setText("Elapsed: " + elapsed);
+					}
+				});
 			}catch(Exception e){}
+			setButtonsEnabled(true);
 			decrementLabel();
 		}
 		
