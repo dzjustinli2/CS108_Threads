@@ -26,7 +26,7 @@ public class WebFrame extends JFrame{
 	private JLabel elapsedLabel;
 	private JProgressBar progressBar;
 	private JButton stopButton;
-	ArrayList<String> links;
+	public ArrayList<String> links;
 	private Launcher lt;
 
 	public WebFrame(String file) {
@@ -50,6 +50,11 @@ public class WebFrame extends JFrame{
 	}
 	
 	private void fetch(int numThreads){
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				progressBar.setValue(0);
+			}
+		});
 		clearStatus();
 		setButtonsEnabled(false);
 		lt = new Launcher(numThreads,this);
@@ -79,12 +84,11 @@ public class WebFrame extends JFrame{
 			int linkSize = links.size();
 			int linkIndex = 0;
 			try{
-				while(threadsRunning.get() > 1 && linkIndex < linkSize){
+				while(linkIndex < linkSize){
 					sm.acquire();
 					WebWorker wb = new WebWorker(program,linkIndex);
 					ar.add(wb);
 					wb.start();
-					incrementLabel();
 					linkIndex = linkIndex + 1;
 				}
 			}catch(Exception e){}
@@ -103,8 +107,12 @@ public class WebFrame extends JFrame{
 			this.interrupt();
 		}
 	}
+	
+	public void setElapsed(){
+		
+	}
 
-	private void decrementLabel(){
+	public void decrementLabel(){
 		lt.sm.release();
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
@@ -113,7 +121,7 @@ public class WebFrame extends JFrame{
 		});
 	}
 	
-	private void incrementLabel(){
+	public void incrementLabel(){
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				runningLabel.setText("Running: " + (int)lt.threadsRunning.incrementAndGet());
@@ -121,11 +129,12 @@ public class WebFrame extends JFrame{
 		});
 	}
 	
-	private synchronized void updateProgressBar(){
+	public synchronized void updateProgressBar(){
 		lt.tasksFinished = lt.tasksFinished + 1;
 		SwingUtilities.invokeLater(new Runnable(){
 			public void run(){
 				progressBar.setValue(lt.tasksFinished);
+				completedLabel.setText("Completed: " + lt.tasksFinished);
 			}
 		});
 	}
@@ -171,6 +180,10 @@ public class WebFrame extends JFrame{
 		for(int i = 0; i < numRows; i++){
 			dbTable.setValueAt("",i,1);
 		}
+	}
+	
+	public void setStatusValue(String value, int index){
+		dbTable.setValueAt(value,index,1);
 	}
 	
 	private void createTable(){

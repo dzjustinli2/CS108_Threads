@@ -8,30 +8,27 @@ import java.util.Date;
 import javax.swing.*;
 
 public class WebWorker extends Thread {
-	WebFrame wb;
+	WebFrame wf;
 	int index;
 	
 	public WebWorker(WebFrame program, int linkIndex){
-		wb = program;
+		wf = program;
 		index = linkIndex;
 	}
-/*
-  This is the core web/download i/o code...
+	public void run(){
+		wf.incrementLabel();
+		//This is the core web/download i/o code...
  		InputStream input = null;
 		StringBuilder contents = null;
 		try {
-			URL url = new URL(urlString);
+			URL url = new URL(wf.links.get(index));
 			URLConnection connection = url.openConnection();
-		
 			// Set connect() to throw an IOException
 			// if connection does not succeed in this many msecs.
 			connection.setConnectTimeout(5000);
-			
 			connection.connect();
 			input = connection.getInputStream();
-
 			BufferedReader reader  = new BufferedReader(new InputStreamReader(input));
-		
 			char[] array = new char[1000];
 			int len;
 			contents = new StringBuilder(1000);
@@ -39,17 +36,33 @@ public class WebWorker extends Thread {
 				contents.append(array, 0, len);
 				Thread.sleep(100);
 			}
-			
 			// Successful download if we get here
-			
+			String line = contents.length() + "";
+			wf.setStatusValue(line,index);
+			wf.decrementLabel();
+			wf.updateProgressBar();
 		}
 		// Otherwise control jumps to a catch...
-		catch(MalformedURLException ignored) {}
-		catch(InterruptedException exception) {
-			// YOUR CODE HERE
-			// deal with interruption
+		catch(MalformedURLException ignored) {
+			String line = "err";
+			wf.setStatusValue(line,index);
+			wf.decrementLabel();
+			wf.updateProgressBar();
 		}
-		catch(IOException ignored) {}
+		catch(InterruptedException exception) {
+			// deal with interruption
+			String line = "interruted";
+			wf.setStatusValue(line,index);
+			wf.decrementLabel();
+			wf.updateProgressBar();
+		}
+		catch(IOException ignored) {
+			//String line = "timeout";
+			String line = "err";
+			wf.setStatusValue(line,index);
+			wf.decrementLabel();
+			wf.updateProgressBar();
+		}
 		// "finally" clause, to close the input stream
 		// in any case
 		finally {
@@ -58,7 +71,5 @@ public class WebWorker extends Thread {
 			}
 			catch(IOException ignored) {}
 		}
-
-*/
-	
+	}
 }
