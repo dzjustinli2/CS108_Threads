@@ -1,5 +1,6 @@
 package assign4;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.io.*;
 import java.net.*;
 import java.text.SimpleDateFormat;
@@ -7,6 +8,13 @@ import java.util.Date;
 import javax.swing.*;
 
 public class WebWorker extends Thread {
+	WebFrame wb;
+	int index;
+	
+	public WebWorker(WebFrame program, int linkIndex){
+		wb = program;
+		index = linkIndex;
+	}
 /*
   This is the core web/download i/o code...
  		InputStream input = null;

@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -49,26 +50,45 @@ public class WebFrame extends JFrame{
 	}
 	
 	private void fetch(int numThreads){
+		clearStatus();
 		setButtonsEnabled(false);
-		lt = new Launcher(numThreads);
+		lt = new Launcher(numThreads,this);
 		lt.start();
 	}
 	
 	public class Launcher extends Thread{
-		int totalThreads;
-		int threadsRunning;
-		ArrayList<WebWorker> ar;
+		private int totalThreads;
+		private ArrayList<WebWorker> ar;
+		public Semaphore sm;
+		public AtomicLong threadsRunning;
+		public int tasksFinished;
+		public WebFrame program;
 		
-		public Launcher(int numThreads){
+		public Launcher(int numThreads, WebFrame wb){
 			super();
 			totalThreads = numThreads;
-			threadsRunning = 0;
+			threadsRunning = new AtomicLong(0);
+			sm = new Semaphore(totalThreads);
 			ar = new ArrayList<WebWorker>(totalThreads);
+			tasksFinished = 0;
+			program = wb;
 		}
+		
 		public void run(){
-			for(int i = 0; i < totalThreads; i++){
-				
-			}
+			incrementLabel();
+			int linkSize = links.size();
+			int linkIndex = 0;
+			try{
+				while(threadsRunning.get() > 1 && linkIndex < linkSize){
+					sm.acquire();
+					WebWorker wb = new WebWorker(program,linkIndex);
+					ar.add(wb);
+					wb.start();
+					incrementLabel();
+					linkIndex = linkIndex + 1;
+				}
+			}catch(Exception e){}
+			decrementLabel();
 		}
 		
 		public void cancelThreads(){
@@ -80,15 +100,34 @@ public class WebFrame extends JFrame{
 					wb = null;
 				}
 			}
-			threadsRunning = 0;
-			SwingUtilities.invokeLater(new Runnable(){
-				public void run(){
-					runningLabel.setText("Running: " + threadsRunning);
-					progressBar.setValue(0);
-				}
-			});
 			this.interrupt();
 		}
+	}
+
+	private void decrementLabel(){
+		lt.sm.release();
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				runningLabel.setText("Running: " + (int)lt.threadsRunning.decrementAndGet());
+			}
+		});
+	}
+	
+	private void incrementLabel(){
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				runningLabel.setText("Running: " + (int)lt.threadsRunning.incrementAndGet());
+			}
+		});
+	}
+	
+	private synchronized void updateProgressBar(){
+		lt.tasksFinished = lt.tasksFinished + 1;
+		SwingUtilities.invokeLater(new Runnable(){
+			public void run(){
+				progressBar.setValue(lt.tasksFinished);
+			}
+		});
 	}
 	
 	private void addListeners(){
