@@ -44,6 +44,7 @@ public class WebWorker extends Thread {
 			char[] array = new char[1000];
 			int len;
 			contents = new StringBuilder(1000);
+			double start = System.currentTimeMillis();
 			while ((len = reader.read(array, 0, array.length)) > 0) {
 				if(isInterrupted()){
 					throw new InterruptedException();
@@ -51,8 +52,10 @@ public class WebWorker extends Thread {
 				contents.append(array, 0, len);
 				Thread.sleep(100);
 			}
+			double end = System.currentTimeMillis();
 			// Successful download if we get here
-			String line = contents.length() + "";
+			double wallToWall = end - start;
+			String line = " " + (int)wallToWall + "ms " + contents.length() + " bytes";
 			graphics(line);
 		}
 		// Otherwise control jumps to a catch...
