@@ -15,7 +15,7 @@ import java.awt.event.*;
 @SuppressWarnings("serial")
 public class WebFrame extends JFrame{
 	
-	private DefaultTableModel dbTable;
+	public DefaultTableModel dbTable;
 	private JTable jTable;
 	private JScrollPane scrollPane;
 	private JButton singleThreadButton;

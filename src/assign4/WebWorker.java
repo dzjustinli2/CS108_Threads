@@ -25,7 +25,7 @@ public class WebWorker extends Thread {
 		StringBuilder contents = null;
 		BufferedReader reader = null;
 		try {
-			URL url = new URL(wf.links.get(index));
+			URL url = new URL((String)wf.dbTable.getValueAt(index,0));
 			URLConnection connection = url.openConnection();
 			if(isInterrupted()){
 				throw new InterruptedException();
