@@ -74,7 +74,7 @@ public class BasicTableModel extends AbstractTableModel {
 	 *  @return true if editable
 	 */
 	public boolean isCellEditable(int row, int col) {
-		return true;
+		return false;
 	}
 	/**
 	 * Changes the value of a cell

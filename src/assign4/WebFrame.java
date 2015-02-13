@@ -3,14 +3,17 @@ package assign4;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+
 import javax.swing.*;
 import javax.swing.event.*;
+import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.*;
 
 public class WebFrame extends JFrame{
 	
-	private BasicTableModel bTable;
+	private DefaultTableModel dbTable;
 	private JTable jTable;
 	private JScrollPane scrollPane;
 	private JButton singleThreadButton;
@@ -37,23 +40,23 @@ public class WebFrame extends JFrame{
 			ArrayList<String> row = new ArrayList<String>(2);
 			row.add(links.get(i));
 			row.add("");
-			bTable.addRow(row);
+			dbTable.addRow(row.toArray());
 		}
 	}
 	
-	private void clearRows(){
-		while(bTable.getRowCount() > 0){
-			bTable.deleteRow(0);
+	private void clearStatus(){
+		int numRows = dbTable.getRowCount();
+		for(int i = 0; i < numRows; i++){
+			dbTable.setValueAt("",i,1);
 		}
 	}
 	
 	private void createTable(){
-		bTable = new BasicTableModel();
-		bTable.addColumn("url");
-		bTable.addColumn("status");
-		jTable = new JTable(bTable);
+		dbTable = new DefaultTableModel(new String[] { "url", "status"}, 0);
+		jTable = new JTable(dbTable);
+		jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
 		scrollPane = new JScrollPane(jTable);
-		scrollPane.setPreferredSize(new Dimension(500,300));
+		scrollPane.setPreferredSize(new Dimension(600,300));
 	}
 	
 	private void createButtons(){
