@@ -8,9 +8,12 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 
+import assign4.TheCount.WorkerThread;
+
 import java.awt.*;
 import java.awt.event.*;
 
+@SuppressWarnings("serial")
 public class WebFrame extends JFrame{
 	
 	private DefaultTableModel dbTable;
@@ -31,7 +34,29 @@ public class WebFrame extends JFrame{
 		links = new ArrayList<String>();
 		readUrls(file);
 		graphics();
+		addListeners();
 		populateTable();
+	}
+	
+	private void addListeners(){
+		singleThreadButton.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Single Button");
+				
+			}
+		});
+		concurrentThreadButton.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Concurrent Button");
+				
+			}
+		});
+		stopButton.addActionListener( new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("Stop Button");
+
+			}
+		});
 	}
 	
 	private void populateTable(){
@@ -101,14 +126,6 @@ public class WebFrame extends JFrame{
 		setVisible(true);
 	}
 
-	public static void main(String[] args) {
-		String file = "links.txt";
-		if(args.length > 0){
-			file = args[0];
-		}
-		WebFrame wb = new WebFrame(file);
-	}
-	
 	private void readUrls(String file){
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(file));
@@ -122,6 +139,14 @@ public class WebFrame extends JFrame{
 		}catch(Exception e){
 			System.out.println("Error reading in links");
 		}
+	}
+	
+	public static void main(String[] args) {
+		String file = "links.txt";
+		if(args.length > 0){
+			file = args[0];
+		}
+		new WebFrame(file);
 	}
 
 }
