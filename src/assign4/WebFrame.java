@@ -28,6 +28,7 @@ public class WebFrame extends JFrame{
 	private JProgressBar progressBar;
 	private JButton stopButton;
 	ArrayList<String> links;
+	ArrayList<WebWorker> workers;
 
 	public WebFrame(String file) {
 		super();
@@ -38,23 +39,42 @@ public class WebFrame extends JFrame{
 		populateTable();
 	}
 	
+	private void setButtonsEnabled(boolean b){
+		singleThreadButton.setEnabled(b);
+		concurrentThreadButton.setEnabled(b);
+		stopButton.setEnabled(!b);
+	}
+	
+	private void interrupt(){
+		setButtonsEnabled(true);
+	}
+	
+	private void fetch(int numThreads){
+		setButtonsEnabled(false);
+	}
+	
 	private void addListeners(){
 		singleThreadButton.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Single Button");
-				
+				//System.out.println("Single Button");
+				fetch(1);
 			}
 		});
 		concurrentThreadButton.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Concurrent Button");
-				
+				//System.out.println("Concurrent Button");
+				String str = numThreadsTextField.getText();
+				int numThreads = 1;
+				try{
+					numThreads = Integer.parseInt(str);
+				}catch(Exception err){ numThreads = 1; }
+				fetch(numThreads);
 			}
 		});
 		stopButton.addActionListener( new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Stop Button");
-
+				//System.out.println("Stop Button");
+				interrupt();
 			}
 		});
 	}
@@ -87,7 +107,7 @@ public class WebFrame extends JFrame{
 	private void createButtons(){
 		singleThreadButton = new JButton("Single Thread Fetch");
 		concurrentThreadButton = new JButton("Concurrent Fetch");
-		numThreadsTextField = new JTextField();
+		numThreadsTextField = new JTextField("4");
 		numThreadsTextField.setMaximumSize(new Dimension(50,10));
 	}
 	
@@ -102,6 +122,7 @@ public class WebFrame extends JFrame{
 		progressBar.setValue(0);
 		progressBar.setStringPainted(true);
 		stopButton = new JButton("Stop");
+		stopButton.setEnabled(false);
 	}
 	
 	private void graphics(){
