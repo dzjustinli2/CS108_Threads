@@ -66,7 +66,6 @@ public class WebFrame extends JFrame{
 		public AtomicLong threadsRunning;
 		public int tasksFinished;
 		public WebFrame program;
-		private Object lock;
 		
 		public Launcher(int numThreads, WebFrame wb){
 			super();
@@ -76,7 +75,6 @@ public class WebFrame extends JFrame{
 			ar = new ArrayList<WebWorker>(totalThreads);
 			tasksFinished = 0;
 			program = wb;
-			lock = new Object();
 		}
 		
 		public void run(){
@@ -86,24 +84,18 @@ public class WebFrame extends JFrame{
 			try{
 				double start = System.currentTimeMillis();
 				while(linkIndex < linkSize){
-					synchronized(lock){
-						sm.acquire();
+					synchronized(this){
 						if(isInterrupted()){
 							throw new InterruptedException();
 						}
-						WebWorker wb = new WebWorker(program,linkIndex);
-						ar.add(wb);
-						wb.start();
-						linkIndex = linkIndex + 1;
+						sm.acquire();
 					}
+					WebWorker wb = new WebWorker(program,linkIndex);
+					ar.add(wb);
+					wb.start();
+					linkIndex = linkIndex + 1;
 				}
-				//Could maybe try joining here
-				while((int)threadsRunning.get() != 1){
-					if(isInterrupted()){
-						throw new InterruptedException();
-					}
-					sleep(50);
-				}
+				sm.acquire(totalThreads);
 				double end = System.currentTimeMillis();
 				double elapsed = (end - start)/1000;
 				SwingUtilities.invokeLater(new Runnable(){
@@ -111,13 +103,15 @@ public class WebFrame extends JFrame{
 						elapsedLabel.setText("Elapsed: " + elapsed);
 					}
 				});
-			}catch(Exception e){}
+			}catch(Exception e){
+				//System.out.println("Interruption in launch thread");
+			}
 			setButtonsEnabled(true);
 			decrementLabel();
 		}
 		
 		public void cancelThreads(){
-			synchronized(lock){
+			synchronized(this){
 				int size = ar.size();
 				for(int i = 0; i < size; i++){
 					WebWorker wb = ar.get(i);
@@ -126,8 +120,8 @@ public class WebFrame extends JFrame{
 						wb = null;
 					}
 				}
-				this.interrupt();
 			}
+			this.interrupt();
 		}
 	}
 
