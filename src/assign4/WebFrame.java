@@ -97,7 +97,7 @@ public class WebFrame extends JFrame{
 				}
 				sm.acquire(totalThreads);
 				double end = System.currentTimeMillis();
-				double elapsed = (end - start)/1000;
+				final double elapsed = (end - start)/1000;
 				SwingUtilities.invokeLater(new Runnable(){
 					public void run(){
 						elapsedLabel.setText("Elapsed: " + elapsed);
